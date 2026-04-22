@@ -265,14 +265,13 @@ function App() {
       const s=new Date();s.setHours(0,0,0,0);
       const res=await fetch("https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate",{
         method:"POST",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},
-        body:JSON.stringify({aggregateBy:[{dataTypeName:"com.google.calories.expended"},{dataTypeName:"com.google.step_count.delta"}],
+        body:JSON.stringify({aggregateBy:[{dataTypeName:"com.google.step_count.delta"}],
           bucketByTime:{durationMillis:Date.now()-s.getTime()},startTimeMillis:s.getTime(),endTimeMillis:Date.now()})
       });
       if(res.status===401){localStorage.removeItem("l10_token");setFitToken(null);setFitData({calories:0,steps:0,loading:false,error:"Session expired.",lastSync:null});return;}
       const data=await res.json();let cal=0,steps=0;
       for(const b of(data.bucket||[]))for(const ds of b.dataset)for(const pt of ds.point){
-        if(ds.dataSourceId.includes("step_count"))cal+=(pt.value?.[0]?.fpVal||pt.value?.[0]?.intVal||0);
-        if(ds.dataSourceId.includes("calories"))steps+=(pt.value?.[0]?.intVal||Math.round(pt.value?.[0]?.fpVal)||0);
+        if(ds.dataSourceId.includes("step_count"))steps+=(pt.value?.[0]?.intVal||Math.round(pt.value?.[0]?.fpVal)||0);
       }
       setFitData({calories:Math.round(cal),steps,loading:false,error:null,lastSync:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});
     }catch{setFitData(p=>({...p,loading:false,error:"Couldn't reach Google Fit"}));}
@@ -282,8 +281,8 @@ function App() {
   const dailyBudget = calcBudget(profile,actLevel);
   const foodCal     = dayData.food.reduce((s,f)=>s+f.cal,0);
   const workoutBurn = (dayData.workouts||[]).reduce((s,w)=>s+w.burn,0);
-  const fitBurn     = fitToken?fitData.calories:0;
-  const totalBurn   = Math.max(fitBurn,workoutBurn);
+  const fitBurn     = 0;
+  const totalBurn   = workoutBurn;
   const netCal      = foodCal-totalBurn;
   const calPct      = Math.min(100,Math.max(0,(netCal/dailyBudget)*100));
   const sColor      = netCal<=0?"#4ade80":netCal<dailyBudget*.75?"#4ade80":netCal<dailyBudget?"#facc15":"#f87171";

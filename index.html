@@ -48,7 +48,7 @@
 <script type="text/babel">
 const {useState,useEffect,useRef} = React;
 
-const CLIENT_ID = "1063666381141-n5nihv4utoojp3bpt9hidmjrfujmjhvb.apps.googleusercontent.com";
+const CLIENT_ID = "1043091658291-1sqrgprsevlb74gvtn3pvr7g3ipevs1l.apps.googleusercontent.com";
 const SCOPES = "https://www.googleapis.com/auth/fitness.activity.read https://www.googleapis.com/auth/fitness.body.read";
 const GOAL_LBS = 10;
 const START_DATE = new Date("2026-04-20");
@@ -729,12 +729,16 @@ function FoodLogger({onAdd,onClose}) {
   const runAI=async()=>{
     if(!descText.trim())return;setAiLoading(true);setAiResult(null);setAiError(null);
     try{
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,
-          system:`You are a calorie estimation assistant. Return ONLY valid JSON: {"name":"Meal name","cal":450,"breakdown":"chicken ~200, rice ~150, sauce ~100"}. No markdown.`,
-          messages:[{role:"user",content:descText}]})});
+      const res=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer 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"},
+        body:JSON.stringify({model:"llama3-8b-8192",max_tokens:300,
+          messages:[
+            {role:"system",content:"You are a calorie estimation assistant. Return ONLY valid JSON with no extra text: {\"name\":\"Meal name\",\"cal\":450,\"breakdown\":\"chicken ~200, rice ~150\"}. Be accurate. No markdown."},
+            {role:"user",content:descText}
+          ]})});
       const data=await res.json();
-      setAiResult(JSON.parse((data.content?.[0]?.text||"").replace(/```json|```/g,"").trim()));
+      const rawText=data.choices?.[0]?.message?.content||"";
+      setAiResult(JSON.parse(rawText.replace(/```json|```/g,"").trim()));
     }catch{setAiError("Couldn't estimate — try being more specific.");}finally{setAiLoading(false);}
   };
 

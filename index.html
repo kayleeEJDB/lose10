@@ -704,7 +704,7 @@ function FoodLogger({onAdd,onClose}) {
         headers:{"Content-Type":"application/json","Authorization":"Bearer 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"},
         body:JSON.stringify({model:"llama-3.1-8b-instant",max_tokens:400,
           messages:[
-            {role:"system",content:"You are a calorie estimation assistant. You MUST respond with ONLY a JSON object, nothing else. Format: {"name":"short meal name","cal":450,"breakdown":"item1 ~200cal, item2 ~150cal, item3 ~100cal"}. No prose, no markdown, no code blocks, just the raw JSON object."},
+            {role:"system",content:`You are a calorie estimation assistant. Respond with ONLY a valid JSON object, no other text. Use this exact format: {"name":"meal name","cal":450,"breakdown":"item1 ~200cal, item2 ~150cal"}. No markdown, no code blocks, just the raw JSON.`},
             {role:"user",content:"Estimate calories for: "+descText}
           ]})});
       if(!res.ok){const err=await res.text();throw new Error("API error: "+res.status+" "+err);}

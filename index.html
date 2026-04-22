@@ -270,9 +270,9 @@ function App() {
       });
       if(res.status===401){localStorage.removeItem("l10_token");setFitToken(null);setFitData({calories:0,steps:0,loading:false,error:"Session expired.",lastSync:null});return;}
       const data=await res.json();let cal=0,steps=0;
-      for(const b of(data.bucket||[]))for(const ds of b.dataset)for(const pt of ds.point){
-        if(ds.dataSourceId.includes("calories"))cal+=pt.value?.[0]?.fpVal||0;
-        if(ds.dataSourceId.includes("step_count"))steps+=pt.value?.[0]?.intVal||0;
+      console.log("RAW BUCKETS:",JSON.stringify(data.bucket?.slice(0,1)));for(const b of(data.bucket||[]))for(const ds of b.dataset)for(const pt of ds.point){
+        if(ds.dataSourceId.includes("calories"))cal+=(pt.value?.[0]?.fpVal||pt.value?.[0]?.intVal||0);
+        if(ds.dataSourceId.includes("step_count"))steps+=(pt.value?.[0]?.intVal||Math.round(pt.value?.[0]?.fpVal)||0);
       }
       setFitData({calories:Math.round(cal),steps,loading:false,error:null,lastSync:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});
     }catch{setFitData(p=>({...p,loading:false,error:"Couldn't reach Google Fit"}));}
